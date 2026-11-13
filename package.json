@@ -1,0 +1,14 @@
+{
+    "name": "truecap",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Crypto market-cap aggregator that lists Bitcoin BLAKE2b (XBT) with its full on-chain supply",
+    "scripts": {
+        "start": "node server.js",
+        "demo": "MOCK=1 node server.js",
+        "check": "node server.js --check"
+    },
+    "engines": {
+        "node": ">=18"
+    }
+}

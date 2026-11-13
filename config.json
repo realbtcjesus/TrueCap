@@ -1,0 +1,109 @@
+{
+  "siteName": "TrueCap",
+  "port": 8080,
+  "refreshSeconds": 120,
+  "topCoins": 250,
+  "vsCurrency": "usd",
+  "coingecko": {
+    "base": "https://api.coingecko.com/api/v3",
+    "apiKey": ""
+  },
+  "xbt": {
+    "id": "bitcoin-blake2b",
+    "symbol": "XBT",
+    "name": "XBT",
+    "aliases": [
+      "BTCB2"
+    ],
+    "maxSupply": 20999999.9769,
+    "marketCapSupply": "total",
+    "forkHeight": 961632,
+    "blake2bActivationHeight": 961640,
+    "supply": {
+      "sources": [
+        "rpc",
+        "explorer",
+        "estimate"
+      ],
+      "rpc": {
+        "url": "http://127.0.0.1:8332",
+        "user": "",
+        "password": "",
+        "useTxOutSetInfo": true
+      },
+      "explorer": {
+        "name": "mempool.kilombino.com",
+        "heightUrl": "https://mempool.kilombino.com/api/blocks/tip/height",
+        "heightJsonPath": ""
+      },
+      "estimate": {
+        "checkpointHeight": 981840,
+        "checkpointTime": "2026-11-13T22:20:38Z",
+        "secondsPerBlock": 600
+      }
+    },
+    "quotePricing": {
+      "USDT": "tether",
+      "USDC": "usd-coin",
+      "USD": "$1",
+      "BTC": "bitcoin",
+      "NEOX": "neoxa",
+      "XMR": "monero"
+    },
+    "outlierPct": 25,
+    "markets": [
+      {
+        "exchange": "Neoxa Exchange",
+        "url": "https://neoxa.exchange",
+        "type": "cg-tickers",
+        "endpoint": "https://neoxa.exchange/api/exchange/tickers",
+        "pairs": [
+          "BTCB2_USDT",
+          "BTCB2_USDC",
+          "BTCB2_BTC",
+          "BTCB2_XMR",
+          "BTCB2_NEOX"
+        ]
+      },
+      {
+        "exchange": "NonKYC",
+        "url": "https://nonkyc.io/market/BTCB2_USDT",
+        "type": "cg-tickers",
+        "endpoint": "https://api.nonkyc.io/api/v2/tickers",
+        "pairs": [
+          "BTCB2_USDT",
+          "BTCB2_BTC"
+        ]
+      },
+      {
+        "exchange": "SafeTrade",
+        "url": "https://safetrade.com",
+        "type": "peatio",
+        "endpoint": "https://safetrade.com/api/v2/peatio/public/markets/tickers",
+        "pairs": [
+          "xbtusdt",
+          "xbtusdc",
+          "xbtbtc"
+        ]
+      }
+    ],
+    "logoUrl": "https://neoxa.exchange/logos/btcb2.png",
+    "history": {
+      "note": "Past XBT prices from Neoxa's chart data, used to fill in 1h/7d changes and the chart.",
+      "sources": [
+        {
+          "url": "https://neoxa.exchange/api/exchange/candles/BTCB2_USDC?interval=1h&limit=1000",
+          "intervalSeconds": 3600
+        },
+        {
+          "url": "https://neoxa.exchange/api/exchange/candles/BTCB2_USDC?interval=5m&limit=300",
+          "intervalSeconds": 300
+        }
+      ]
+    },
+    "candles": {
+      "note": "Candle (OHLC) data for the XBT chart, from Neoxa's busiest XBT market.",
+      "urlTemplate": "https://neoxa.exchange/api/exchange/candles/BTCB2_USDC?interval={interval}&limit={limit}"
+    }
+  }
+}

@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TrueCap — Crypto prices & market caps, with XBT at full supply</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23111827'/%3E%3Ctext x='16' y='22' font-size='16' font-family='Arial' font-weight='700' text-anchor='middle' fill='%23f7b500'%3ET%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#ffffff;--bg2:#f7f8fa;--fg:#0d1421;--muted:#6b7280;--line:#eef0f3;--accent:#f7b500;--accent-ink:#8a5a00;
+  --up:#16a34a;--down:#dc2626;--brand:#111827;--hl:#fffbea;--chip:#eef1f6;
+}
+@media (prefers-color-scheme:dark){:root{--bg:#0b0f17;--bg2:#121826;--fg:#e8ebf1;--muted:#8a93a6;--line:#1d2433;--hl:#1c1a10;--chip:#1a2132;--brand:#e8ebf1;--accent-ink:#f7c948}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-variant-numeric:tabular-nums}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1360px;margin:0 auto;padding:0 20px}
+.ticker{border-bottom:1px solid var(--line);font-size:12px;color:var(--muted)}
+.ticker .wrap{display:flex;gap:22px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
+.ticker b{color:var(--fg);font-weight:600}
+.demo{background:#7c3aed;color:#fff;text-align:center;font-size:12px;padding:5px 10px;font-weight:600;letter-spacing:.02em}
+header.top{border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;gap:24px;height:62px}
+.logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:19px;letter-spacing:-.02em}
+.logo i{display:grid;place-items:center;width:28px;height:28px;border-radius:7px;background:#111827;color:var(--accent);font-style:normal;font-size:15px}
+.logo span{color:var(--accent-ink)}
+nav.main{display:flex;gap:18px;font-weight:600;color:var(--muted)}
+nav.main a.on,nav.main a:hover{color:var(--fg)}
+.search{margin-left:auto}
+.search input{background:var(--bg2);border:1px solid var(--line);color:var(--fg);border-radius:9px;padding:8px 12px;width:240px;font:inherit}
+h1{font-size:24px;letter-spacing:-.02em;margin:26px 0 4px}
+.sub{color:var(--muted);margin:0 0 18px;max-width:820px}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:22px}
+.card{border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:var(--bg)}
+.card .k{color:var(--muted);font-size:12px;font-weight:600}
+.card .v{font-size:20px;font-weight:700;margin-top:4px;letter-spacing:-.01em}
+.card .s{font-size:12px;margin-top:2px}
+table{width:100%;border-collapse:collapse}
+th{font-size:12px;color:var(--fg);font-weight:700;text-align:right;padding:11px 10px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0;background:var(--bg);z-index:1;cursor:pointer;user-select:none}
+th.l,td.l{text-align:left}
+td{text-align:right;padding:14px 10px;border-bottom:1px solid var(--line);white-space:nowrap;font-weight:500}
+tr.coin:hover td{background:var(--bg2)}
+tr.xbt td{background:var(--hl)}
+tr.xbt:hover td{background:var(--hl)}
+td.rank{color:var(--muted);width:44px}
+.name{display:flex;align-items:center;gap:10px;font-weight:700}
+.name small{color:var(--muted);font-weight:500;text-transform:uppercase}
+.av{width:24px;height:24px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:10px;font-weight:800;color:#fff}
+.av img{width:24px;height:24px;border-radius:50%}
+.tag{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;background:var(--accent);color:#111;letter-spacing:.02em}
+.tag.ghost{background:var(--chip);color:var(--muted)}
+.up{color:var(--up)}.down{color:var(--down)}
+.supply{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.bar{width:150px;height:5px;border-radius:5px;background:var(--chip);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--muted);border-radius:5px}
+.spark{display:block;margin-left:auto}
+.pager{display:flex;justify-content:center;gap:6px;margin:22px 0 40px}
+.pager button{border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:8px;padding:6px 12px;font:inherit;font-weight:600;cursor:pointer}
+.pager button.on{background:var(--brand);color:var(--bg)}
+.tablewrap{overflow-x:auto}
+footer{border-top:1px solid var(--line);color:var(--muted);font-size:12px;padding:22px 0 40px}
+/* detail */
+.crumb{color:var(--muted);font-size:13px;margin-top:22px}
+.dgrid{display:grid;grid-template-columns:360px minmax(0,1fr);gap:28px;margin-top:14px}
+.dgrid>div{min-width:0}
+.dname{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:800}
+.dname small{color:var(--muted);font-size:14px;font-weight:600}
+.dprice{font-size:34px;font-weight:800;letter-spacing:-.02em;margin:8px 0 2px}
+.stats{margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stats .card .v{font-size:16px}
+.note{border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:14px 16px;margin-top:14px;background:var(--bg2);font-size:13px}
+.note h3{margin:0 0 6px;font-size:14px}
+.note p{margin:6px 0}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px}
+.kv span:nth-child(odd){color:var(--muted)}
+.kv span:nth-child(even){text-align:right;font-weight:600}
+.tabs{display:flex;gap:4px;background:var(--bg2);border-radius:9px;padding:3px;width:max-content}
+.tabs button{border:0;background:none;color:var(--muted);font:inherit;font-weight:700;padding:5px 12px;border-radius:7px;cursor:pointer}
+.tabs button.on{background:var(--bg);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.chartbox{border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:10px;position:relative}
+.chartbox svg{display:block;width:100%;height:320px}
+.tip{position:absolute;pointer-events:none;background:var(--brand);color:var(--bg);font-size:12px;padding:6px 9px;border-radius:7px;white-space:nowrap;display:none}
+h2{font-size:18px;margin:28px 0 10px}
+.src{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.src span{font-size:12px;border-radius:7px;padding:3px 8px;background:var(--chip)}
+.src .ok{color:var(--up)}.src .bad{color:var(--down)}
+.cmp td,.cmp th{font-size:13px}
+.empty{padding:60px 0;text-align:center;color:var(--muted)}
+.star{border:0;background:none;color:var(--muted);font-size:16px;line-height:1;cursor:pointer;padding:4px;border-radius:6px}
+.star:hover{color:var(--accent-ink)}
+.star.on{color:#f5a400}
+.star.big{font-size:22px}
+td.c-star,th.c-star{width:28px;padding-right:0}
+.views{display:flex;gap:6px;margin:0 0 10px}
+.views button{border:1px solid var(--line);background:var(--bg);color:var(--muted);font:inherit;font-weight:700;padding:6px 12px;border-radius:999px;cursor:pointer}
+.views button.on{background:var(--brand);color:var(--bg);border-color:var(--brand)}
+.views .cnt{display:inline-block;min-width:18px;padding:0 5px;border-radius:9px;background:var(--chip);color:var(--fg);font-size:11px;margin-left:2px}
+.views button.on .cnt{background:rgba(255,255,255,.25);color:inherit}
+.short{display:none}
+.mobchg{display:none;font-size:12px;margin-top:2px}
+.nm{display:inline}
+@media (max-width:1000px){.cards{grid-template-columns:repeat(2,1fr)}.dgrid{grid-template-columns:minmax(0,1fr)}nav.main{display:none}.search input{width:160px}}
+@media (max-width:760px){
+  .wrap{padding:0 12px}
+  body{font-size:13.5px}
+  header.top .wrap{height:54px;gap:10px}
+  .logo{font-size:17px}
+  .search input{width:130px;padding:7px 10px}
+  .ticker .wrap{flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;gap:16px;scrollbar-width:none}
+  .ticker .wrap::-webkit-scrollbar{display:none}
+  .ticker span[style*="margin-left:auto"]{margin-left:0!important}
+  h1{font-size:19px;margin-top:18px}
+  .sub{font-size:13px}
+  .cards{grid-template-columns:1fr 1fr;gap:8px}
+  .card{padding:10px 12px}
+  .card .v{font-size:16px}
+  .c-1h,.c-7d,.c-vol,.c-sup,.c-spark,.c-rank,.c-24h,.c-last,.c-share,.c-why{display:none}
+  .mobchg{display:block}
+  table.coins td,table.coins th{padding:11px 6px}
+  table.coins td.c-star,table.coins th.c-star{padding:0 0 0 2px;width:24px}
+  .full{display:none}.short{display:inline}
+  .name{gap:8px}
+  .nm{display:flex;flex-direction:column;line-height:1.2}
+  .nm1{max-width:110px;overflow:hidden;text-overflow:ellipsis}
+  .name small{font-size:11px}
+  th{position:static}
+  .dprice{font-size:28px}
+  .dname{font-size:19px;flex-wrap:wrap}
+  .stats{grid-template-columns:1fr 1fr;gap:8px}
+  .stats .card .v{font-size:14px}
+  h2{font-size:16px}
+  .cmp td,.cmp th{padding:10px 5px;font-size:12.5px}
+  .cmp th,.cmp td.l{white-space:normal}
+  footer{font-size:11px}
+}
+@media (max-width:380px){
+  .nm1{max-width:84px}
+  table.coins td,table.coins th{padding:10px 4px}
+  .cmp td,.cmp th{padding:9px 3px;font-size:12px}
+  .av,.av img{width:20px;height:20px}
+}
+</style>
+</head>
+<body>
+<div id="demo" class="demo" hidden>DEMO DATA: running with MOCK=1. Start without MOCK to load live prices.</div>
+<div class="ticker"><div class="wrap" id="ticker">Loading…</div></div>
+<header class="top"><div class="wrap">
+  <a class="logo" href="#"><i id="sitelogo">T</i><b id="sitename">True<span>Cap</span></b></a>
+  <nav class="main"><a href="#" id="nav-home" class="on">Cryptocurrencies</a><a href="#xbt" id="nav-xbt">XBT</a></nav>
+  <div class="search"><input id="q" placeholder="Search coin" autocomplete="off"></div>
+</div></header>
+<main class="wrap" id="app"><div class="empty">Loading market data…</div></main>
+<footer><div class="wrap" id="foot"></div></footer>
+
+<script src="/chart.js"></script>
+<script>
+const $ = (s, el = document) => el.querySelector(s);
+const LS = { get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+let watch = new Set(LS.get('xbtcap.watch', []));
+let view = LS.get('xbtcap.view', 'all'); // 'all' | 'watch'
+function toggleWatch(id) { watch.has(id) ? watch.delete(id) : watch.add(id); LS.set('xbtcap.watch', [...watch]); }
+const starBtn = (id, big) => `<button class="star ${watch.has(id) ? 'on' : ''}${big ? ' big' : ''}" data-star="${esc(id)}" title="${watch.has(id) ? 'Remove from watchlist' : 'Add to watchlist'}" aria-label="Watchlist">${watch.has(id) ? '★' : '☆'}</button>`;
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-star]'); if (!b) return;
+  e.preventDefault(); e.stopPropagation();
+  const id = b.dataset.star; toggleWatch(id);
+  document.querySelectorAll(`[data-star="${CSS.escape(id)}"]`).forEach((el) => { el.classList.toggle('on', watch.has(id)); el.textContent = watch.has(id) ? '★' : '☆'; el.title = watch.has(id) ? 'Remove from watchlist' : 'Add to watchlist'; });
+  const n = document.querySelector('#wcount'); if (n) n.textContent = watch.size;
+  if (view === 'watch' && !location.hash.replace('#', '')) renderList();
+}, true);
+let S = null, page = 1, sortKey = 'rank', sortDir = 1, query = '', chartDays = 7;
+const PER = 100;
+
+// ---------- formatting ----------
+function usd(v, opts = {}) {
+  if (v == null || !isFinite(v)) return '—';
+  const a = Math.abs(v);
+  let d = a >= 1000 ? 2 : a >= 1 ? 2 : a >= 0.01 ? 4 : 8;
+  if (opts.compact) return '$' + compact(v);
+  return '$' + v.toLocaleString('en-US', { minimumFractionDigits: Math.min(d, 2), maximumFractionDigits: d });
+}
+function compact(v) {
+  const a = Math.abs(v);
+  if (a >= 1e12) return (v / 1e12).toFixed(2) + 'T';
+  if (a >= 1e9) return (v / 1e9).toFixed(2) + 'B';
+  if (a >= 1e6) return (v / 1e6).toFixed(2) + 'M';
+  if (a >= 1e3) return (v / 1e3).toFixed(2) + 'K';
+  return v.toFixed(2);
+}
+const big = (v) => (v == null ? '—' : '$' + Math.round(v).toLocaleString('en-US'));
+const num = (v, d = 0) => (v == null ? '—' : v.toLocaleString('en-US', { maximumFractionDigits: d }));
+function pct(v) {
+  if (v == null || !isFinite(v)) return '<span class="muted">—</span>';
+  const c = v >= 0 ? 'up' : 'down';
+  return `<span class="${c}">${v >= 0 ? '▲' : '▼'} ${Math.abs(v).toFixed(2)}%</span>`;
+}
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function avatar(c) {
+  const fb = c.isXbt ? `<span class="av" style="background:#111827;color:#f7b500">X</span>` : '';
+  if (c.image) return `<span class="av"><img src="${esc(c.image)}" alt="" loading="lazy"${c.isXbt ? ` onerror="this.parentNode.outerHTML='${fb.replace(/"/g, '&quot;')}'"` : ''}></span>`;
+  if (c.isXbt) return fb;
+  let h = 0; for (const ch of c.id) h = (h * 31 + ch.charCodeAt(0)) % 360;
+  return `<span class="av" style="background:hsl(${h} 55% 45%)">${esc(c.symbol.slice(0, 2).toUpperCase())}</span>`;
+}
+function sparkSvg(arr, w = 150, h = 44) {
+  if (!arr || arr.length < 2) return '<span class="muted">—</span>';
+  const step = Math.max(1, Math.floor(arr.length / 80));
+  const pts = arr.filter((_, i) => i % step === 0 || i === arr.length - 1);
+  const mn = Math.min(...pts), mx = Math.max(...pts), r = mx - mn || 1;
+  const d = pts.map((v, i) => `${(i / (pts.length - 1)) * w},${h - 3 - ((v - mn) / r) * (h - 6)}`).join(' ');
+  const col = pts[pts.length - 1] >= pts[0] ? 'var(--up)' : 'var(--down)';
+  return `<svg class="spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><polyline fill="none" stroke="${col}" stroke-width="1.6" points="${d}"/></svg>`;
+}
+function ago(iso) {
+  const s = Math.round((Date.now() - Date.parse(iso)) / 1000);
+  return s < 60 ? `${s}s ago` : `${Math.round(s / 60)}m ago`;
+}
+
+// ---------- chrome ----------
+function siteNameHtml(n) { // highlight a trailing "Cap" (True<Cap>) or what follows a leading "XBT"
+  n = n || '';
+  let m = /^(.+?)(Cap)$/.exec(n) || /^(XBT)(.+)$/i.exec(n);
+  return m ? `${esc(m[1])}<span>${esc(m[2])}</span>` : esc(n);
+}
+function renderChrome() {
+  const g = S.global;
+  if (S.siteName) {
+    $('#sitename').innerHTML = siteNameHtml(S.siteName);
+    $('#sitelogo').textContent = S.siteName.charAt(0).toUpperCase();
+    document.title = `${S.siteName} — Crypto prices & market caps, with XBT at full supply`;
+  }
+  $('#demo').hidden = !S.mock;
+  $('#ticker').innerHTML = `
+    <span>Cryptos: <b>${num(g.activeCryptos)}</b></span>
+    <span>Market Cap: <b>${usd(g.totalMarketCap, { compact: true })}</b></span>
+    <span>24h Vol: <b>${usd(g.totalVolume, { compact: true })}</b></span>
+    <span>Dominance: <b>BTC ${g.btcDominance?.toFixed(1)}%</b> · <b>ETH ${g.ethDominance?.toFixed(1)}%</b> · <b>XBT ${g.xbtDominance?.toFixed(2)}%</b></span>
+    <span style="margin-left:auto">Updated <b>${ago(S.updatedAt)}</b></span>`;
+  $('#foot').innerHTML = `${esc(S.siteName || 'TrueCap')} lists the top ${S.coins.length} coins by market cap. Prices for all coins except XBT come from CoinGecko; XBT is computed from exchange tickers and on-chain supply.
+    Market cap = price × supply. Prices are not financial advice. JSON: <a href="/api/v1/coins/markets"><u>/api/v1/coins/markets</u></a> · <a href="/api/xbt"><u>/api/xbt</u></a> · <a href="/api/v1/supply/xbt"><u>/api/v1/supply/xbt</u></a>`;
+}
+
+// ---------- list ----------
+function sortVal(c, k) {
+  return { rank: c.rank, name: c.name.toLowerCase(), price: c.current_price, h1: c.price_change_percentage_1h_in_currency,
+    h24: c.price_change_percentage_24h_in_currency, d7: c.price_change_percentage_7d_in_currency, cap: c.market_cap,
+    vol: c.total_volume, supply: c.circulating_supply }[k];
+}
+function renderList() {
+  const g = S.global, x = S.xbt.coin;
+  let list = S.coins.filter((c) => (!query || c.name.toLowerCase().includes(query) || c.symbol.toLowerCase().includes(query)) && (view === 'all' || watch.has(c.id)));
+  list = [...list].sort((a, b) => {
+    const A = sortVal(a, sortKey), B = sortVal(b, sortKey);
+    if (A == null) return 1; if (B == null) return -1;
+    return (A > B ? 1 : A < B ? -1 : 0) * sortDir;
+  });
+  const pages = Math.max(1, Math.ceil(list.length / PER));
+  page = Math.min(page, pages);
+  const rows = list.slice((page - 1) * PER, page * PER);
+  const th = (k, label, cls = '') => `<th class="${cls}" data-k="${k}">${label}${sortKey === k ? (sortDir > 0 ? ' ↑' : ' ↓') : ''}</th>`;
+
+  $('#app').innerHTML = `
+    <h1>Today's Cryptocurrency Prices by Market Cap</h1>
+    <p class="sub">The global crypto market cap is <b>${usd(g.totalMarketCap, { compact: true })}</b>${g.cgChange24h != null ? `, ${pct(g.cgChange24h)} over the last day` : ''}.
+      XBT is listed here at <b>#${x.rank}</b> with a supply of <b>${num(x.circulating_supply)} XBT</b>.</p>
+    <div class="cards">
+      <div class="card"><div class="k">Market Cap</div><div class="v">${usd(g.totalMarketCap, { compact: true })}</div><div class="s">${pct(g.cgChange24h)}</div></div>
+      <div class="card"><div class="k">24h Trading Volume</div><div class="v">${usd(g.totalVolume, { compact: true })}</div></div>
+      <div class="card"><div class="k">Bitcoin Dominance</div><div class="v">${g.btcDominance?.toFixed(2)}%</div><div class="s muted">ETH ${g.ethDominance?.toFixed(2)}%</div></div>
+      <a class="card" href="#xbt" style="border-color:var(--accent)"><div class="k">XBT</div><div class="v">${usd(x.current_price)}</div><div class="s">Cap ${usd(x.market_cap, { compact: true })} · rank #${x.rank}</div></a>
+    </div>
+    <div class="views">
+      <button data-view="all" class="${view === 'all' ? 'on' : ''}">All coins</button>
+      <button data-view="watch" class="${view === 'watch' ? 'on' : ''}">★ Watchlist <span class="cnt" id="wcount">${watch.size}</span></button>
+    </div>
+    <div class="tablewrap"><table class="coins">
+      <thead><tr><th class="l c-star"></th>${th('rank', '#', 'l c-rank')}${th('name', 'Name', 'l')}${th('price', 'Price')}${th('h1', '1h %', 'c-1h')}${th('h24', '24h %', 'c-24h')}${th('d7', '7d %', 'c-7d')}${th('cap', 'Market Cap')}${th('vol', 'Volume (24h)', 'c-vol')}${th('supply', 'Circulating Supply', 'c-sup')}<th class="c-spark">Last 7 Days</th></tr></thead>
+      <tbody>${rows.map(rowHtml).join('') || `<tr><td colspan="11" class="l empty">${view === 'watch' && !watch.size ? 'Your watchlist is empty. Tap the ☆ next to any coin to add it.' : query ? `No coins match “${esc(query)}”.` : 'None of your watchlist coins are in the current list.'}</td></tr>`}</tbody>
+    </table></div>
+    <div class="pager">${pages < 2 ? '' : Array.from({ length: pages }, (_, i) => `<button data-p="${i + 1}" class="${i + 1 === page ? 'on' : ''}">${i + 1}</button>`).join('')}</div>`;
+
+  $('#app').querySelectorAll('th[data-k]').forEach((el) => el.onclick = () => {
+    const k = el.dataset.k; if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = k === 'rank' || k === 'name' ? 1 : -1; } renderList();
+  });
+  $('#app').querySelectorAll('[data-view]').forEach((b) => b.onclick = () => { view = b.dataset.view; LS.set('xbtcap.view', view); page = 1; renderList(); });
+  $('#app').querySelectorAll('.pager button').forEach((b) => b.onclick = () => { page = +b.dataset.p; renderList(); scrollTo(0, 0); });
+  $('#app').querySelectorAll('tr.coin').forEach((tr) => tr.onclick = () => location.hash = tr.dataset.href);
+}
+function rowHtml(c) {
+  const sup = c.circulating_supply, max = c.max_supply;
+  const bar = max ? `<div class="bar" title="${((sup / max) * 100).toFixed(1)}% of max supply"><i style="width:${Math.min(100, (sup / max) * 100)}%"></i></div>` : '';
+  return `<tr class="coin ${c.isXbt ? 'xbt' : ''}" data-href="${c.isXbt ? 'xbt' : 'coin-' + esc(c.id)}" style="cursor:pointer">
+    <td class="l c-star">${starBtn(c.id)}</td>
+    <td class="rank l c-rank">${c.rank}</td>
+    <td class="l"><div class="name">${avatar(c)}<span class="nm"><span class="nm1">${esc(c.name)}</span>${c.name.toUpperCase() === c.symbol.toUpperCase() ? '' : ` <small>${esc(c.symbol)}</small>`}</span></div></td>
+    <td>${usd(c.current_price)}<div class="mobchg">${pct(c.price_change_percentage_24h_in_currency)}</div></td>
+    <td class="c-1h">${pct(c.price_change_percentage_1h_in_currency)}</td>
+    <td class="c-24h">${pct(c.price_change_percentage_24h_in_currency)}</td>
+    <td class="c-7d">${pct(c.price_change_percentage_7d_in_currency)}</td>
+    <td><span class="full">${big(c.market_cap)}</span><span class="short">${usd(c.market_cap, { compact: true })}</span></td>
+    <td class="c-vol">${big(c.total_volume)}</td>
+    <td class="c-sup"><div class="supply"><span>${num(sup)} ${esc(c.symbol.toUpperCase())}</span>${bar}</div></td>
+    <td class="c-spark">${sparkSvg(c.sparkline_in_7d && c.sparkline_in_7d.price)}</td></tr>`;
+}
+
+// ---------- XBT detail ----------
+const METHOD = {
+  'node-utxo': ['Exact', 'Your own XBT node: total of every unspent output (gettxoutsetinfo)'],
+  'node-height': ['Exact', 'Your own XBT node: block height × Bitcoin issuance schedule'],
+  'explorer-height': ['Exact', 'Explorer block height × Bitcoin issuance schedule'],
+  'estimate': ['Estimate', 'Height estimated from time since the BLAKE2b activation block'],
+};
+async function renderXbt() {
+  const X = S.xbt, c = X.coin, sp = X.supply;
+  const [mlabel, mdesc] = METHOD[sp.method] || [sp.method, sp.detail];
+  const volMc = c.market_cap ? (c.total_volume / c.market_cap) * 100 : null;
+  $('#app').innerHTML = `
+    <div class="crumb"><a href="#">Cryptocurrencies</a> › XBT</div>
+    <div class="dgrid">
+      <div>
+        <div class="dname">${avatar(c)} XBT <span class="tag ghost">#${X.rank}</span> ${starBtn(c.id, true)}</div>
+        <div class="dprice">${usd(c.current_price)}</div>
+        <div>${pct(c.price_change_percentage_24h_in_currency)} <span class="muted" style="color:var(--muted)">(24h)</span></div>
+        <div class="stats">
+          <div class="card"><div class="k">Market cap</div><div class="v">${big(c.market_cap)}</div><div class="s" style="color:var(--muted)">price × ${sp.marketCapSupply === 'max' ? 'max' : 'total mined'} supply</div></div>
+          <div class="card"><div class="k">Fully diluted (21M)</div><div class="v">${big(c.fully_diluted_valuation)}</div></div>
+          <div class="card"><div class="k">Volume (24h)</div><div class="v">${big(c.total_volume)}</div></div>
+          <div class="card"><div class="k">Vol / Mkt cap</div><div class="v">${volMc == null ? '—' : volMc.toFixed(4) + '%'}</div></div>
+          <div class="card" style="grid-column:1/-1"><div class="k">Circulating = total supply</div><div class="v">${num(sp.supply, 2)} XBT</div>
+            <div class="bar" style="width:100%;margin-top:8px"><i style="width:${sp.pctMined}%;background:var(--accent)"></i></div>
+            <div class="s" style="color:var(--muted);margin-top:6px">${sp.pctMined.toFixed(2)}% of ${num(sp.maxSupply, 4)} max supply</div></div>
+        </div>
+        <div class="note">
+          <h3>Where the supply number comes from <span class="tag ${mlabel === 'Exact' ? '' : 'ghost'}">${mlabel}</span></h3>
+          <div class="kv">
+            <span>XBT block height</span><span>${num(sp.height)}</span>
+            <span>Method</span><span>${esc(mdesc)}</span>
+            <span>Chain split from BTC</span><span>block ${num(sp.forkHeight)}</span>
+            <span>BLAKE2b PoW from</span><span>block ${num(sp.blake2bActivationHeight)}</span>
+          </div>
+          <p>XBT kept Bitcoin's full ledger at the split. Every coin that existed on Bitcoin at block ${num(sp.forkHeight)} also exists on XBT, so its supply follows Bitcoin's issuance schedule up to the current XBT block height. Listings that show a few thousand XBT in circulation miss those inherited coins.</p>
+        </div>
+      </div>
+      <div>
+        <h2 style="margin:0">XBT price</h2>
+        <div id="xchart"></div>
+
+        <h2>Markets</h2>
+        <div class="tablewrap"><table class="cmp">
+          <thead><tr><th class="l">Exchange</th><th class="l">Pair</th><th class="c-last">Last</th><th>Price (USD)</th><th>Volume (24h)</th><th class="c-share">Volume %</th><th class="l">Used in price</th></tr></thead>
+          <tbody>${X.markets.map((m) => `<tr>
+            <td class="l"><a href="${esc(m.url)}" target="_blank" rel="noopener"><b>${esc(m.exchange)}</b></a></td>
+            <td class="l">${esc(m.pair)}</td>
+            <td class="c-last">${m.last != null ? m.last.toLocaleString('en-US', { maximumSignificantDigits: 8 }) : '—'} ${esc(m.quote)}</td>
+            <td>${usd(m.priceUsd)}</td>
+            <td><span class="full">${big(m.volumeUsd)}</span><span class="short">${usd(m.volumeUsd, { compact: true })}</span></td>
+            <td class="c-share">${m.share ? (m.share * 100).toFixed(1) + '%' : '—'}</td>
+            <td class="l">${m.excluded ? `<span class="down">Excluded<span class="c-why">: ${esc(m.excluded)}</span></span>` : '<span class="up">Yes</span>'}</td></tr>`).join('') || '<tr><td colspan="7" class="l">No markets reachable.</td></tr>'}</tbody>
+        </table></div>
+        <p style="color:var(--muted);font-size:12px">The XBT price is the volume-weighted average across these markets. BTC- and NEOX-quoted pairs are converted to USD using CoinGecko rates. Markets more than ${esc(String(X.outlierPct ?? 25))}% from the median price are left out.</p>
+        <div class="src">${X.sources.map((s) => `<span>${esc(s.exchange)}: ${s.ok ? `<b class="ok">${s.pairs} pair${s.pairs === 1 ? '' : 's'}</b>` : `<b class="bad">offline</b> <span title="${esc(s.error)}">ⓘ</span>`}</span>`).join('')}</div>
+      </div>
+    </div>`;
+  new XChart($('#xchart'), {
+    key: 'xbt', hasVolume: true, timeframe: '1h',
+    timeframes: [{ id: '5m', label: '5m' }, { id: '15m', label: '15m' }, { id: '1h', label: '1H' }, { id: '4h', label: '4H' }, { id: '1d', label: '1D' }],
+    load: async (tf) => {
+      const r = await fetch('/api/xbt/candles?interval=' + tf); const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Chart unavailable.');
+      return j;
+    },
+  });
+}
+
+function drawChart(pts) {
+  const svg = $('#chart'), tip = $('#tip');
+  if (!pts.length) { svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="currentColor" opacity=".5">History builds up as the server runs</text>'; return; }
+  const W = svg.clientWidth || 800, H = 320, P = { l: 10, r: 70, t: 14, b: 26 };
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  const t0 = pts[0].t, t1 = pts[pts.length - 1].t || t0 + 1;
+  const ps = pts.map((p) => p.price), mn = Math.min(...ps), mx = Math.max(...ps), pad = (mx - mn) * 0.08 || mx * 0.01;
+  const lo = mn - pad, hi = mx + pad;
+  const X = (t) => P.l + ((t - t0) / (t1 - t0 || 1)) * (W - P.l - P.r);
+  const Y = (v) => P.t + (1 - (v - lo) / (hi - lo)) * (H - P.t - P.b);
+  const up = ps[ps.length - 1] >= ps[0], col = up ? 'var(--up)' : 'var(--down)';
+  const line = pts.map((p) => `${X(p.t).toFixed(1)},${Y(p.price).toFixed(1)}`).join(' ');
+  let grid = '';
+  for (let i = 0; i <= 4; i++) { const v = lo + ((hi - lo) * i) / 4, y = Y(v); grid += `<line x1="${P.l}" x2="${W - P.r}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${W - P.r + 8}" y="${y + 4}" font-size="11" fill="var(--muted)">${usd(v)}</text>`; }
+  for (let i = 0; i <= 5; i++) { const t = t0 + ((t1 - t0) * i) / 5; const d = new Date(t); grid += `<text x="${X(t)}" y="${H - 6}" font-size="11" fill="var(--muted)" text-anchor="${i === 0 ? 'start' : i === 5 ? 'end' : 'middle'}">${chartDays === 1 ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : d.toLocaleDateString([], chartDays > 60 ? { month: 'short', year: '2-digit' } : { month: 'short', day: 'numeric' })}</text>`; }
+  svg.innerHTML = `<defs><linearGradient id="gf" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${up ? '#16a34a' : '#dc2626'}" stop-opacity=".18"/><stop offset="1" stop-color="${up ? '#16a34a' : '#dc2626'}" stop-opacity="0"/></linearGradient></defs>
+    ${grid}<polygon fill="url(#gf)" points="${X(t0)},${H - P.b} ${line} ${X(t1)},${H - P.b}"/><polyline fill="none" stroke="${col}" stroke-width="2" points="${line}"/>
+    <line id="cx" y1="${P.t}" y2="${H - P.b}" stroke="var(--muted)" stroke-dasharray="3 3" opacity="0"/><circle id="cd" r="4" fill="${col}" opacity="0"/>`;
+  svg.onmousemove = (e) => {
+    const r = svg.getBoundingClientRect(), mx = ((e.clientX - r.left) / r.width) * W;
+    let best = pts[0]; for (const p of pts) if (Math.abs(X(p.t) - mx) < Math.abs(X(best.t) - mx)) best = p;
+    const x = X(best.t), y = Y(best.price);
+    $('#cx').setAttribute('x1', x); $('#cx').setAttribute('x2', x); $('#cx').setAttribute('opacity', 1);
+    $('#cd').setAttribute('cx', x); $('#cd').setAttribute('cy', y); $('#cd').setAttribute('opacity', 1);
+    tip.style.display = 'block';
+    tip.innerHTML = `<b>${usd(best.price)}</b><br>${new Date(best.t).toLocaleString()}${best.cap ? '<br>Cap ' + usd(best.cap, { compact: true }) : ''}`;
+    const px = (x / W) * r.width; tip.style.left = Math.min(px + 14, r.width - 170) + 'px'; tip.style.top = (y / H) * r.height + 'px';
+  };
+  svg.onmouseleave = () => { tip.style.display = 'none'; $('#cx').setAttribute('opacity', 0); $('#cd').setAttribute('opacity', 0); };
+}
+
+// ---------- other coin detail ----------
+const fmtDate = (iso) => iso ? new Date(iso).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' }) : '—';
+function renderCoin(id) {
+  const c = S.coins.find((k) => k.id === id);
+  if (!c) { location.hash = ''; return; }
+  $('#app').innerHTML = `
+    <div class="crumb"><a href="#">Cryptocurrencies</a> › ${esc(c.name)}</div>
+    <div class="dgrid"><div>
+      <div class="dname">${avatar(c)} ${esc(c.name)} <small>${esc(c.symbol.toUpperCase())}</small> <span class="tag ghost">#${c.rank}</span> ${starBtn(c.id, true)}</div>
+      <div class="dprice">${usd(c.current_price)}</div><div>${pct(c.price_change_percentage_24h_in_currency)} <span style="color:var(--muted)">(24h)</span></div>
+      <div class="stats">
+        <div class="card"><div class="k">Market cap</div><div class="v">${big(c.market_cap)}</div></div>
+        <div class="card"><div class="k">Fully diluted</div><div class="v">${big(c.fully_diluted_valuation)}</div></div>
+        <div class="card"><div class="k">Volume (24h)</div><div class="v">${big(c.total_volume)}</div></div>
+        <div class="card"><div class="k">Vol / Mkt cap</div><div class="v">${c.market_cap ? ((c.total_volume / c.market_cap) * 100).toFixed(2) + '%' : '—'}</div></div>
+        <div class="card"><div class="k">Circulating supply</div><div class="v">${num(c.circulating_supply)}</div>
+          ${c.max_supply ? `<div class="bar" style="width:100%;margin-top:8px"><i style="width:${Math.min(100, (c.circulating_supply / c.max_supply) * 100)}%"></i></div>` : ''}</div>
+        <div class="card"><div class="k">Max supply</div><div class="v">${c.max_supply ? num(c.max_supply) : '∞'}</div><div class="s" style="color:var(--muted)">Total ${num(c.total_supply)}</div></div>
+      </div>
+      <div id="extra"><div class="note" style="color:var(--muted)">Loading more details…</div></div>
+    </div><div>
+      <h2 style="margin:0">${esc(c.symbol.toUpperCase())} price</h2>
+      <div id="xchart"></div>
+      <div id="mkts"></div>
+    </div></div>`;
+  new XChart($('#xchart'), {
+    key: c.id, hasVolume: false, timeframe: '30',
+    timeframes: [{ id: '1', label: '1D' }, { id: '7', label: '7D' }, { id: '30', label: '1M' }, { id: '90', label: '3M' }, { id: '365', label: '1Y' }],
+    load: async (days) => {
+      const r = await fetch(`/api/coin/${encodeURIComponent(c.id)}/ohlc?days=${days}`); const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Chart unavailable.');
+      return j;
+    },
+  });
+  loadCoinDetail(c);
+}
+async function loadCoinDetail(c) {
+  const id = c.id;
+  let d;
+  try {
+    const r = await fetch(`/api/coin/${encodeURIComponent(id)}`);
+    d = await r.json();
+    if (!r.ok) throw new Error(d.error);
+  } catch (e) {
+    if (location.hash === '#coin-' + id) $('#extra').innerHTML = `<div class="note">${esc(e.message || 'Could not load details.')} <a href="#coin-${esc(id)}" onclick="renderCoin('${esc(id)}');return false"><u>Retry</u></a></div>`;
+    return;
+  }
+  if (location.hash !== '#coin-' + id) return;
+  const desc = d.description || '';
+  const short = desc.length > 420 ? desc.slice(0, 420).replace(/\s+\S*$/, '') + '…' : desc;
+  $('#extra').innerHTML = `
+    <div class="stats">
+      <div class="card"><div class="k">All-time high</div><div class="v">${usd(d.ath)}</div><div class="s">${pct(d.athChange)} <span style="color:var(--muted)">· ${fmtDate(d.athDate)}</span></div></div>
+      <div class="card"><div class="k">All-time low</div><div class="v">${usd(d.atl)}</div><div class="s">${pct(d.atlChange)} <span style="color:var(--muted)">· ${fmtDate(d.atlDate)}</span></div></div>
+      <div class="card"><div class="k">24h range</div><div class="v" style="font-size:14px">${usd(d.low24)} – ${usd(d.high24)}</div></div>
+      <div class="card"><div class="k">30d / 1y change</div><div class="v" style="font-size:14px">${pct(d.change30d)} / ${pct(d.change1y)}</div></div>
+    </div>
+    ${desc ? `<div class="note"><h3>About ${esc(d.name)}</h3>
+      <p id="desc">${esc(short)}</p>
+      ${desc.length > short.length ? `<p><a href="#" id="more"><u>Read more</u></a></p>` : ''}
+      <div class="kv" style="margin-top:8px">
+        ${d.homepage ? `<span>Website</span><span><a href="${esc(d.homepage)}" target="_blank" rel="noopener"><u>${esc(new URL(d.homepage).host)}</u></a></span>` : ''}
+        ${d.explorers.map((u, i) => { try { return `<span>${i ? '' : 'Explorers'}</span><span><a href="${esc(u)}" target="_blank" rel="noopener"><u>${esc(new URL(u).host)}</u></a></span>`; } catch { return ''; } }).join('')}
+        ${d.categories.length ? `<span>Categories</span><span>${d.categories.map(esc).join(', ')}</span>` : ''}
+        ${d.genesis ? `<span>Launched</span><span>${fmtDate(d.genesis)}</span>` : ''}
+      </div></div>` : ''}`;
+  const more = $('#more');
+  if (more) more.onclick = (e) => { e.preventDefault(); $('#desc').textContent = desc; more.parentNode.remove(); };
+  $('#mkts').innerHTML = `
+    <h2>Markets</h2>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th class="l">Exchange</th><th class="l">Pair</th><th>Price</th><th>Volume (24h)</th><th class="l">Trust</th></tr></thead>
+      <tbody>${d.tickers.map((t) => `<tr>
+        <td class="l">${t.url ? `<a href="${esc(t.url)}" target="_blank" rel="noopener"><b>${esc(t.exchange)}</b></a>` : `<b>${esc(t.exchange)}</b>`}</td>
+        <td class="l">${esc(t.pair)}</td><td>${usd(t.priceUsd)}</td><td><span class="full">${big(t.volumeUsd)}</span><span class="short">${usd(t.volumeUsd, { compact: true })}</span></td>
+        <td class="l">${t.trust ? `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${t.trust === 'green' ? 'var(--up)' : t.trust === 'yellow' ? '#eab308' : 'var(--down)'}"></span>` : '—'}</td></tr>`).join('') || '<tr><td colspan="5" class="l">No markets reported.</td></tr>'}</tbody>
+    </table></div>
+    <p style="color:var(--muted);font-size:12px">Top markets by 24h volume, from CoinGecko. <a href="https://www.coingecko.com/en/coins/${esc(id)}" target="_blank" rel="noopener"><u>View on CoinGecko</u></a></p>`;
+}
+
+// ---------- routing ----------
+function route() {
+  if (!S || S.status !== 'ok') return;
+  const h = location.hash.replace('#', '');
+  $('#nav-home').classList.toggle('on', !h || h.startsWith('coin-'));
+  $('#nav-xbt').classList.toggle('on', h === 'xbt');
+  if (h === 'xbt') renderXbt();
+  else if (h.startsWith('coin-')) renderCoin(h.slice(5));
+  else renderList();
+}
+async function load(first) {
+  try {
+    const r = await fetch('/api/snapshot'); S = await r.json();
+    if (S.status !== 'ok') { $('#app').innerHTML = `<div class="empty">${S.status === 'error' ? 'Could not load data: ' + esc(S.error) : 'Fetching first prices…'}</div>`; setTimeout(load, 3000); return; }
+    renderChrome();
+    const h = location.hash;
+    if (first || !h || h === '#') route();   // keep detail views stable; list refreshes in place
+  } catch (e) { $('#app').innerHTML = `<div class="empty">Server unreachable.</div>`; }
+}
+window.addEventListener('hashchange', route);
+$('#q').addEventListener('input', (e) => { query = e.target.value.trim().toLowerCase(); page = 1; if (location.hash && location.hash !== '#') location.hash = ''; else renderList(); });
+load(true);
+setInterval(load, 60000);
+</script>
+</body>
+</html>

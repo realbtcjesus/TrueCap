@@ -1,0 +1,22 @@
+# Render Blueprint: runs the site 24/7 on Render (https://render.com).
+# Render reads this file when you choose New > Blueprint and pick this repository.
+services:
+  - type: web
+    name: truecap
+    runtime: node
+    plan: starter            # always-on; the free plan sleeps and can't keep price history
+    buildCommand: echo "No build step needed"
+    startCommand: node server.js
+    healthCheckPath: /healthz
+    autoDeploy: true         # update the site automatically when the code on GitHub changes
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DATA_DIR        # price history and cached logo live on the disk below
+        value: /var/data
+      - key: COINGECKO_API_KEY
+        sync: false          # Render will ask you to paste your free CoinGecko key
+    disk:
+      name: truecap-data
+      mountPath: /var/data
+      sizeGB: 1
