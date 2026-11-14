@@ -1,7 +1,7 @@
 {
   "siteName": "TrueCap",
   "nameOverrides": {
-    "bitcoin": "Bitcoin SHA-256"
+    "bitcoin": "Spamcoin"
   },
   "port": 8080,
   "refreshSeconds": 120,
@@ -14,7 +14,7 @@
   "xbt": {
     "id": "bitcoin-blake2b",
     "symbol": "XBT",
-    "name": "Bitcoin BLAKE2b",
+    "name": "Bitcoin",
     "aliases": [
       "BTCB2"
     ],
