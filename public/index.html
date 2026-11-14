@@ -267,7 +267,7 @@ function renderList() {
     <div class="cards">
       <div class="card"><div class="k">Market Cap</div><div class="v">${usd(g.totalMarketCap, { compact: true })}</div><div class="s">${pct(g.cgChange24h)}</div></div>
       <div class="card"><div class="k">24h Trading Volume</div><div class="v">${usd(g.totalVolume, { compact: true })}</div></div>
-      <div class="card"><div class="k">Bitcoin Dominance</div><div class="v">${g.btcDominance?.toFixed(2)}%</div><div class="s muted">ETH ${g.ethDominance?.toFixed(2)}%</div></div>
+      <div class="card"><div class="k">BTC Dominance</div><div class="v">${g.btcDominance?.toFixed(2)}%</div><div class="s muted">ETH ${g.ethDominance?.toFixed(2)}%</div></div>
       <a class="card" href="#xbt" style="border-color:var(--accent)"><div class="k">XBT</div><div class="v">${usd(x.current_price)}</div><div class="s">Cap ${usd(x.market_cap, { compact: true })} · rank #${x.rank}</div></a>
     </div>
     <div class="views">
@@ -307,8 +307,8 @@ function rowHtml(c) {
 // ---------- XBT detail ----------
 const METHOD = {
   'node-utxo': ['Exact', 'Your own XBT node: total of every unspent output (gettxoutsetinfo)'],
-  'node-height': ['Exact', 'Your own XBT node: block height × Bitcoin issuance schedule'],
-  'explorer-height': ['Exact', 'Explorer block height × Bitcoin issuance schedule'],
+  'node-height': ['Exact', 'Your own XBT node: block height × original 21M issuance schedule'],
+  'explorer-height': ['Exact', 'Explorer block height × original 21M issuance schedule'],
   'estimate': ['Estimate', 'Height estimated from time since the BLAKE2b activation block'],
 };
 async function renderXbt() {
@@ -339,7 +339,7 @@ async function renderXbt() {
             <span>Chain split from BTC</span><span>block ${num(sp.forkHeight)}</span>
             <span>BLAKE2b PoW from</span><span>block ${num(sp.blake2bActivationHeight)}</span>
           </div>
-          <p>XBT kept Bitcoin's full ledger at the split. Every coin that existed on Bitcoin at block ${num(sp.forkHeight)} also exists on XBT, so its supply follows Bitcoin's issuance schedule up to the current XBT block height. Listings that show a few thousand XBT in circulation miss those inherited coins.</p>
+          <p>XBT kept BTC's full ledger at the split. Every coin that existed on BTC at block ${num(sp.forkHeight)} also exists on XBT, so its supply follows the original 21-million issuance schedule up to the current XBT block height. Listings that show a few thousand XBT in circulation miss those inherited coins.</p>
         </div>
       </div>
       <div>
