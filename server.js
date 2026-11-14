@@ -180,6 +180,9 @@ async function refresh() {
     getJson(`${cg}/simple/price?ids=${quoteIds.join(',')}&vs_currencies=${vs}`).catch(() => ({})),
   ]);
   let coins = marketsPages.flat().filter((c) => c.id !== config.xbt.id);
+  // Display-name changes from config.json, e.g. Bitcoin -> Bitcoin SHA-256
+  const renames = config.nameOverrides || {};
+  coins.forEach((c) => { if (renames[c.id]) c.name = renames[c.id]; });
 
   const quoteUsd = {};
   for (const [sym, src] of Object.entries(config.xbt.quotePricing)) {
@@ -273,7 +276,7 @@ async function coinDetail(id) {
       .sort((a, b) => b.volumeUsd - a.volumeUsd)
       .slice(0, 25);
     return {
-      id: d.id, name: d.name, symbol: d.symbol,
+      id: d.id, name: (config.nameOverrides || {})[d.id] || d.name, symbol: d.symbol,
       description: ((d.description && d.description.en) || '').replace(/<[^>]+>/g, '').trim(),
       homepage: ((d.links && d.links.homepage) || []).filter(Boolean)[0] || null,
       explorers: ((d.links && d.links.blockchain_site) || []).filter(Boolean).slice(0, 3),
