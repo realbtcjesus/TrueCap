@@ -114,14 +114,15 @@ td.c-star,th.c-star{width:28px;padding-right:0}
   .cards{grid-template-columns:1fr 1fr;gap:8px}
   .card{padding:10px 12px}
   .card .v{font-size:16px}
-  .c-1h,.c-7d,.c-vol,.c-sup,.c-spark,.c-rank,.c-24h,.c-last,.c-share,.c-why{display:none}
+  .c-1h,.c-7d,.c-vol,.c-sup,.c-spark,.c-24h,.c-last,.c-share,.c-why{display:none}
+  table.coins td.c-rank,table.coins th.c-rank{padding-left:0;padding-right:2px;width:1%;font-size:12px}
   .mobchg{display:block}
   table.coins td,table.coins th{padding:11px 6px}
   table.coins td.c-star,table.coins th.c-star{padding:0 0 0 2px;width:24px}
   .full{display:none}.short{display:inline}
   .name{gap:8px}
   .nm{display:flex;flex-direction:column;line-height:1.2}
-  .nm1{max-width:110px;overflow:hidden;text-overflow:ellipsis}
+  .nm1{max-width:118px;white-space:normal;line-height:1.25}
   .name small{font-size:11px}
   th{position:static}
   .dprice{font-size:28px}
@@ -134,7 +135,7 @@ td.c-star,th.c-star{width:28px;padding-right:0}
   footer{font-size:11px}
 }
 @media (max-width:380px){
-  .nm1{max-width:84px}
+  .nm1{max-width:96px}
   table.coins td,table.coins th{padding:10px 4px}
   .cmp td,.cmp th{padding:9px 3px;font-size:12px}
   .av,.av img{width:20px;height:20px}
@@ -292,7 +293,7 @@ function rowHtml(c) {
   return `<tr class="coin ${c.isXbt ? 'xbt' : ''}" data-href="${c.isXbt ? 'xbt' : 'coin-' + esc(c.id)}" style="cursor:pointer">
     <td class="l c-star">${starBtn(c.id)}</td>
     <td class="rank l c-rank">${c.rank}</td>
-    <td class="l"><div class="name">${avatar(c)}<span class="nm"><span class="nm1">${esc(c.name)}</span>${c.name.toUpperCase() === c.symbol.toUpperCase() ? '' : ` <small>${esc(c.symbol)}</small>`}</span></div></td>
+    <td class="l"><div class="name">${avatar(c)}<span class="nm"><span class="nm1">${esc(c.name).replace(/-/g, '\u2011')}</span>${c.name.toUpperCase() === c.symbol.toUpperCase() ? '' : ` <small>${esc(c.symbol)}</small>`}</span></div></td>
     <td>${usd(c.current_price)}<div class="mobchg">${pct(c.price_change_percentage_24h_in_currency)}</div></td>
     <td class="c-1h">${pct(c.price_change_percentage_1h_in_currency)}</td>
     <td class="c-24h">${pct(c.price_change_percentage_24h_in_currency)}</td>
@@ -315,10 +316,10 @@ async function renderXbt() {
   const [mlabel, mdesc] = METHOD[sp.method] || [sp.method, sp.detail];
   const volMc = c.market_cap ? (c.total_volume / c.market_cap) * 100 : null;
   $('#app').innerHTML = `
-    <div class="crumb"><a href="#">Cryptocurrencies</a> › XBT</div>
+    <div class="crumb"><a href="#">Cryptocurrencies</a> › ${esc(c.name)}</div>
     <div class="dgrid">
       <div>
-        <div class="dname">${avatar(c)} XBT <span class="tag ghost">#${X.rank}</span> ${starBtn(c.id, true)}</div>
+        <div class="dname">${avatar(c)} ${esc(c.name)} <small>${esc(c.symbol.toUpperCase())}</small> <span class="tag ghost">#${X.rank}</span> ${starBtn(c.id, true)}</div>
         <div class="dprice">${usd(c.current_price)}</div>
         <div>${pct(c.price_change_percentage_24h_in_currency)} <span class="muted" style="color:var(--muted)">(24h)</span></div>
         <div class="stats">
