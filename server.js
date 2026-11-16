@@ -26,10 +26,28 @@ if (process.env.COINGECKO_API_KEY) config.coingecko.apiKey = process.env.COINGEC
 // ---------- fetch (real or mock) ----------
 const fetchImpl = MOCK ? require('./lib/mockfetch')(path.join(ROOT, 'fixtures')) : globalThis.fetch;
 
+// CoinGecko has two kinds of key: free "Demo" keys (api.coingecko.com) and paid
+// keys (pro-api.coingecko.com). At startup we try the key on the paid address;
+// if CoinGecko accepts it there we use that, otherwise the free address.
+let cgKeyType = null; // 'paid' | 'demo' | null (no key)
+async function detectCoinGeckoPlan() {
+  const key = config.coingecko.apiKey;
+  if (!key || MOCK) return;
+  try {
+    const r = await fetchImpl(`${config.coingecko.proBase}/ping`, { headers: { 'x-cg-pro-api-key': key } });
+    if (r.ok) { cgKeyType = 'paid'; config.coingecko.base = config.coingecko.proBase; }
+    else cgKeyType = 'demo';
+  } catch (e) {
+    cgKeyType = 'demo';
+    console.log('Could not check the CoinGecko key type (' + e.message + '); using the free Demo address.');
+  }
+  console.log(`CoinGecko key: ${cgKeyType === 'paid' ? 'paid plan (pro-api.coingecko.com)' : 'Demo (api.coingecko.com)'}`);
+}
+
 async function getJson(url) {
   const headers = { accept: 'application/json' };
   if (config.coingecko.apiKey && url.startsWith(config.coingecko.base)) {
-    headers[config.coingecko.base.includes('pro-api') ? 'x-cg-pro-api-key' : 'x-cg-demo-api-key'] = config.coingecko.apiKey;
+    headers[cgKeyType === 'paid' ? 'x-cg-pro-api-key' : 'x-cg-demo-api-key'] = config.coingecko.apiKey;
   }
   const res = await fetchImpl(url, { headers });
   if (!res.ok) throw new Error(`${res.status} ${url}`);
@@ -176,8 +194,9 @@ async function refresh() {
   const quoteIds = [...new Set(Object.values(config.xbt.quotePricing).filter((v) => !v.startsWith('$')))];
   const [marketsPages, global, simple] = await Promise.all([
     Promise.all(marketReqs),
-    getJson(`${cg}/global`).catch(() => null),
-    getJson(`${cg}/simple/price?ids=${quoteIds.join(',')}&vs_currencies=${vs}`).catch(() => ({})),
+    // Market-wide totals and quote-currency prices change slowly: refresh every 10 min to save API credits.
+    cached('cg:global', 10 * 60e3, () => getJson(`${cg}/global`)).catch(() => null),
+    cached('cg:simple', 10 * 60e3, () => getJson(`${cg}/simple/price?ids=${quoteIds.join(',')}&vs_currencies=${vs}`)).catch(() => ({})),
   ]);
   let coins = marketsPages.flat().filter((c) => c.id !== config.xbt.id);
   // Display-name changes from config.json, e.g. Bitcoin -> Bitcoin SHA-256
@@ -432,6 +451,6 @@ async function check() {
 if (process.argv.includes('--check')) check();
 else {
   serve();
-  backfillHistory().finally(loop);
+  detectCoinGeckoPlan().finally(() => backfillHistory().finally(loop));
   setInterval(backfillHistory, 3 * 36e5);
 }

@@ -9,6 +9,7 @@
   "vsCurrency": "usd",
   "coingecko": {
     "base": "https://api.coingecko.com/api/v3",
+    "proBase": "https://pro-api.coingecko.com/api/v3",
     "apiKey": ""
   },
   "xbt": {
