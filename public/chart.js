@@ -211,6 +211,8 @@
       };
       document.addEventListener('keydown', this.keyHandler);
       this.ro = new ResizeObserver(() => this.draw());
+      this.themeHandler = () => { if (!document.body.contains(this.root)) window.removeEventListener('themechange', this.themeHandler); else this.draw(); };
+      window.addEventListener('themechange', this.themeHandler);
       this.ro.observe(this.root);
     }
 
